@@ -2,14 +2,14 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_HOME = "C:/dev/flutter" }
+        FLUTTER_HOME = "C:/dev/flutter" // Reemplaza con la ruta correcta al SDK de Flutter
         PATH = "${FLUTTER_HOME}/bin:${env.PATH}"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Edriplx/UnitConnect.git' 
+                git 'https://github.com/Edriplx/UnitConnect.git' // Reemplaza con la URL de tu repositorio
             }
         }
 
