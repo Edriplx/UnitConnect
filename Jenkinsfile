@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Edriplx/UnitConnect.git' // Reemplaza con la URL de tu repositorio
+                git branch: 'main', url: 'https://github.com/Edriplx/UnitConnect.git' // Asegúrate de especificar la rama correcta
             }
         }
 
@@ -33,7 +33,7 @@ pipeline {
 
         stage('Run App') {
             steps {
-                sh 'flutter run' 
+                sh 'flutter run' // Elimina "--no-sound-null-safety" si no es necesario
             }
         }
     }
