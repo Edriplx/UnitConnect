@@ -2,12 +2,19 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_HOME = "C:/dev/flutter" // Reemplaza con la ruta correcta al SDK de Flutter
-        GIT_HOME = "C:/Program Files/Git/bin" // Ruta a Git según tu captura de pantalla
+        FLUTTER_HOME = "C:/dev/flutter"
+        GIT_HOME = "C:/Program Files/Git/bin"
         PATH = "${FLUTTER_HOME}/bin;${GIT_HOME};${env.PATH}"
     }
 
     stages {
+        stage('Check PATH') {
+            steps {
+                bat 'echo %PATH%'
+                bat 'git --version' // Comando para verificar que Git está disponible
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Edriplx/UnitConnect.git'
@@ -34,7 +41,7 @@ pipeline {
 
         stage('Run App') {
             steps {
-                bat 'flutter run' // Elimina "--no-sound-null-safety" si no es necesario
+                bat 'flutter run'
             }
         }
     }
