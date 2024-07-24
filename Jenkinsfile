@@ -5,13 +5,14 @@ pipeline {
         FLUTTER_HOME = "C:/dev/flutter"
         GIT_HOME = "C:/Program Files/Git/bin"
         PATH = "${FLUTTER_HOME}/bin;${GIT_HOME};${env.PATH}"
+        GIT_PYTHON_GIT_EXECUTABLE = "${GIT_HOME}/git.exe" // Añadir variable de entorno específica para Git
     }
 
     stages {
         stage('Check PATH') {
             steps {
                 bat 'echo %PATH%'
-                bat 'git --version' // Comando para verificar que Git está disponible
+                bat 'git --version'
             }
         }
 
