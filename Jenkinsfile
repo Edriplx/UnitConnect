@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         FLUTTER_HOME = "C:/dev/flutter" // Reemplaza con la ruta correcta al SDK de Flutter
-        PATH = "${FLUTTER_HOME}/bin;${env.PATH}"
+        GIT_HOME = "C:/Program Files/Git/bin" // Ruta a Git según tu captura de pantalla
+        PATH = "${FLUTTER_HOME}/bin;${GIT_HOME};${env.PATH}"
     }
 
     stages {
