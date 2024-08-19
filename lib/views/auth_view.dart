@@ -1,42 +1,68 @@
-// lib/screens/register.dart
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:unitconnect/views/home.dart';
+import 'package:unitconnect/views/register_view.dart';
+import 'package:unitconnect/views/wrapper.dart';
 
-class RegisterPage extends StatefulWidget {
+class AuthPage extends StatefulWidget {
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  _AuthPageState createState() => _AuthPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final TextEditingController nameController = TextEditingController();
+class _AuthPageState extends State<AuthPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool _acceptTerms = false;
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
+  bool _isPasswordVisible = false;
 
-  void _register() {
-    String name = nameController.text;
-    String email = emailController.text;
-    String password = passwordController.text;
+  void _login() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
 
-    // Aquí puedes agregar la lógica de registro con los datos ingresados
-    print('Name: $name');
-    print('Email: $email');
-    print('Password: $password');
+      // Navegar a la pantalla principal en caso de éxito
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => Wrapper()),
+      );
+    } catch (e) {
+      _showErrorDialog('Error al iniciar sesión: ${e.toString()}');
+    }
+  }
 
-    // Navegar a la pantalla principal
-    Navigator.pop(context);
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _navigateToRegister() {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => RegisterPage()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Crear cuenta'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        title: Text('UniConnect'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -44,19 +70,8 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Crear cuenta',
+              'Inicio de Sesión',
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Nombre',
-                hintText: 'Your name',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
             ),
             SizedBox(height: 16),
             TextField(
@@ -73,37 +88,30 @@ class _RegisterPageState extends State<RegisterPage> {
             SizedBox(height: 16),
             TextField(
               controller: passwordController,
-              obscureText: true,
+              obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
                 labelText: 'Contraseña',
                 hintText: 'Your password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Checkbox(
-                  value: _acceptTerms,
-                  onChanged: (bool? value) {
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
                     setState(() {
-                      _acceptTerms = value ?? false;
+                      _isPasswordVisible = !_isPasswordVisible;
                     });
                   },
                 ),
-                Expanded(
-                  child: Text(
-                    'Acepto los Términos de Servicios y Política de privacidad.',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ],
+              ),
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _register,
+              onPressed: _login,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
@@ -114,7 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
-                    'Continuar',
+                    'Iniciar Sesión',
                     style: TextStyle(fontSize: 18),
                   ),
                 ),
@@ -123,11 +131,9 @@ class _RegisterPageState extends State<RegisterPage> {
             SizedBox(height: 16),
             Center(
               child: TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: _navigateToRegister,
                 child: Text(
-                  '¿Tienes una cuenta? Iniciar sesión',
+                  '¿No tienes una cuenta? Crear cuenta',
                   style: TextStyle(color: Colors.red),
                 ),
               ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "807950914449",
+    "project_id": "uni-connect-c5117",
+    "storage_bucket": "uni-connect-c5117.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807950914449:android:bfe8c872e2d3d250728030",
+        "android_client_info": {
+          "package_name": "com.example.unitconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsmMRo6TN8erSAo4b_Pco9j-ZhPCeve-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
