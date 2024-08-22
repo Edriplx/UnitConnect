@@ -1,4 +1,3 @@
-// lib/services/profile_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
@@ -30,5 +29,60 @@ class ProfileController {
       return !doc.exists;
     }
     return false;
+  }
+
+  Future<List<UserProfile>> getUsersByArea(String area) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('profiles')
+        .where('mainStudyArea', isEqualTo: area)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<UserProfile>> getUsersWithSimilarInterests(String userId) async {
+    UserProfile? currentUser = await getProfile(userId);
+    if (currentUser == null) {
+      return [];
+    }
+
+    // Obtener todos los usuarios con la misma área de estudio principal
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('profiles')
+        .where('mainStudyArea', isEqualTo: currentUser.mainStudyArea)
+        .where('uid', isNotEqualTo: userId)
+        .get();
+
+    List<UserProfile> potentialMatches = querySnapshot.docs
+        .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
+        .toList();
+
+    // Filtrar y ordenar usuarios basados en habilidades compartidas
+    List<UserProfile> similarUsers = potentialMatches.where((user) {
+      // Contar habilidades compartidas
+      int sharedSkills = user.skills.where((skill) => currentUser.skills.contains(skill)).length;
+      // Considerar como match si comparten al menos una habilidad
+      return sharedSkills > 0;
+    }).toList();
+
+    // Ordenar por número de habilidades compartidas (de mayor a menor)
+    similarUsers.sort((a, b) {
+      int aSharedSkills = a.skills.where((skill) => currentUser.skills.contains(skill)).length;
+      int bSharedSkills = b.skills.where((skill) => currentUser.skills.contains(skill)).length;
+      return bSharedSkills.compareTo(aSharedSkills);
+    });
+
+    // Limitar a un máximo de 20 usuarios para evitar cargar demasiados datos
+    return similarUsers.take(20).toList();
+  }
+
+  Future<List<AcademicProject>> getUserProjects(String userId) async {
+    UserProfile? user = await getProfile(userId);
+    if (user != null) {
+      return user.academicHistory;
+    }
+    return [];
   }
 }
