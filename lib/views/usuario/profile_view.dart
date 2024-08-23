@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:typed_data'; // Para manejar datos binarios
-import 'dart:convert'; // Para decodificar Base64
-import '../../models/user_model.dart'; // Asegúrate de que la ruta sea correcta
+import 'dart:typed_data';
+import '../../models/user_model.dart';
 import '../../controllers/user_controller.dart';
 import 'profile_edit_view.dart';
 
 class ProfileView extends StatefulWidget {
+  final UserProfile? userProfile;
+  final bool isCurrentUser;
+
+  ProfileView({this.userProfile, this.isCurrentUser = false});
+
   @override
   _ProfileViewState createState() => _ProfileViewState();
 }
@@ -18,7 +22,11 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    if (widget.userProfile != null) {
+      _userProfile = widget.userProfile;
+    } else if (widget.isCurrentUser) {
+      _loadProfile();
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -35,12 +43,12 @@ class _ProfileViewState extends State<ProfileView> {
     if (_userProfile?.foto != null) {
       try {
         final Uint8List bytes = _userProfile!.foto!;
-        return MemoryImage(bytes); // Mostrar la imagen desde bytes
+        return MemoryImage(bytes);
       } catch (e) {
         print('Error al cargar la imagen de perfil: $e');
       }
     }
-    return AssetImage('assets/default_avatar.png'); // Imagen predeterminada en caso de error
+    return AssetImage('assets/default_avatar.png');
   }
 
   @override
@@ -53,6 +61,7 @@ class _ProfileViewState extends State<ProfileView> {
     }
 
     return Scaffold(
+      appBar: widget.isCurrentUser ? null : AppBar(title: Text('Perfil de ${_userProfile!.name}')),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -61,7 +70,7 @@ class _ProfileViewState extends State<ProfileView> {
             Center(
               child: CircleAvatar(
                 radius: 50,
-                backgroundImage: _getProfileImage(), // Usar imagen desde datos binarios
+                backgroundImage: _getProfileImage(),
                 child: _userProfile!.foto == null
                     ? Icon(Icons.person, size: 50)
                     : null,
@@ -93,21 +102,23 @@ class _ProfileViewState extends State<ProfileView> {
                 );
               }).toList(),
             ),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                child: Text('Editar perfil'),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EditProfileView(userProfile: _userProfile!)),
-                  );
-                  if (result == true) {
-                    _loadProfile();
-                  }
-                },
+            if (widget.isCurrentUser) ...[
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  child: Text('Editar perfil'),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditProfileView(userProfile: _userProfile!)),
+                    );
+                    if (result == true) {
+                      _loadProfile();
+                    }
+                  },
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
