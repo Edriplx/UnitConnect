@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unitconnect/views/auth_view.dart';
-import 'package:unitconnect/views/usuario/profile_view.dart'; // Make sure to import your ProfileView
+import 'package:unitconnect/views/usuario/profile_view.dart';
+import 'package:unitconnect/views/teams/search_team.dart'; // Importa la nueva vista
 
 class HomePage extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class _HomePageState extends State<HomePage> {
 
   static List<Widget> _widgetOptions = <Widget>[
     HomeContent(),
+    SearchTeamView(), // Nueva vista de búsqueda
     ProfileView(),
   ];
 
@@ -26,7 +28,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? 'Home' : 'Profile'),
+        title: Text(_selectedIndex == 0
+            ? 'Home'
+            : _selectedIndex == 1
+                ? 'Teams'
+                : 'Profile'),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -51,6 +57,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Teams', // Etiqueta para la nueva sección
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -114,5 +124,3 @@ class HomeContent extends StatelessWidget {
     );
   }
 }
-
-// The rest of your code (TabBarSection, SubjectImages, InterestSection) remains the same
