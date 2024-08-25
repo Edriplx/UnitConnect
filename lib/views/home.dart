@@ -5,6 +5,7 @@ import 'package:unitconnect/views/usuario/profile_view.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../models/user_model.dart';
 import '../controllers/user_controller.dart';
+import 'package:unitconnect/views/teams/search_team.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -46,6 +47,8 @@ class _HomePageState extends State<HomePage> {
         return _currentUserProfile != null
             ? ProfileView(userProfile: _currentUserProfile, isCurrentUser: true)
             : Center(child: CircularProgressIndicator());
+      case 2:
+        return SearchTeamView();
       default:
         return HomeContent();
     }
@@ -91,6 +94,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search Team', // Nuevo ítem agregado
           ),
         ],
         currentIndex: _selectedIndex,

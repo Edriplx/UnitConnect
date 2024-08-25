@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../controllers/user_controller.dart';
+import '../../models/user_model.dart';
 
 class SearchTeamView extends StatefulWidget {
   @override
@@ -9,6 +11,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
   String selectedStudyArea = '';
   String selectedSkill = '';
   String selectedProjectTopic = '';
+  List<UserProfile> _searchResults = [];
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +46,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                   'Arte',
                   'Matemáticas'
                 ],
+                selectedValue: selectedStudyArea,
                 onChanged: (value) {
                   setState(() {
                     selectedStudyArea = value!;
@@ -58,6 +62,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                   'Redacción',
                   'Investigación'
                 ],
+                selectedValue: selectedSkill,
                 onChanged: (value) {
                   setState(() {
                     selectedSkill = value!;
@@ -76,8 +81,17 @@ class _SearchTeamViewState extends State<SearchTeamView> {
               SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Lógica para buscar los perfiles basados en los filtros seleccionados
+                  onPressed: () async {
+                    List<UserProfile> searchResults =
+                        await ProfileController().searchUsers(
+                      studyArea: selectedStudyArea,
+                      skill: selectedSkill,
+                      projectTopic: selectedProjectTopic,
+                    );
+
+                    setState(() {
+                      _searchResults = searchResults;
+                    });
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
@@ -104,6 +118,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
   Widget _buildDropdownField({
     required String label,
     required List<String> items,
+    required String selectedValue,
     required void Function(String?)? onChanged,
   }) {
     return Column(
@@ -127,7 +142,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: null,
+              value: selectedValue.isNotEmpty ? selectedValue : null,
               isExpanded: true,
               hint: Text('Selecciona $label'),
               items: items.map((String value) {
@@ -190,19 +205,36 @@ class _SearchTeamViewState extends State<SearchTeamView> {
           ),
         ),
         SizedBox(height: 16),
-        // Aquí agregarías el código para mostrar los resultados de la búsqueda
-        // Por ahora, sólo se mostrará un texto de ejemplo
-        Container(
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.indigo[50],
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'No hay resultados para mostrar',
-            style: TextStyle(fontSize: 16, color: Colors.black54),
-          ),
-        ),
+        _searchResults.isNotEmpty
+            ? ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  UserProfile user = _searchResults[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: user.foto != null
+                          ? MemoryImage(user.foto!)
+                          : AssetImage('assets/default_avatar.png')
+                              as ImageProvider,
+                    ),
+                    title: Text(user.name),
+                    subtitle: Text(user.mainStudyArea),
+                  );
+                },
+              )
+            : Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.indigo[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'No hay resultados para mostrar',
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+              ),
       ],
     );
   }

@@ -97,35 +97,4 @@ class ProfileController {
     }
     return [];
   }
-
-  // Implementación de searchUsers
-  Future<List<UserProfile>> searchUsers({
-    required String studyArea,
-    required String skill,
-    required String projectTopic,
-  }) async {
-    Query query = _firestore.collection('profiles');
-
-    if (studyArea.isNotEmpty) {
-      query = query.where('mainStudyArea', isEqualTo: studyArea);
-    }
-
-    if (skill.isNotEmpty) {
-      query = query.where('skills', arrayContains: skill);
-    }
-
-    QuerySnapshot querySnapshot = await query.get();
-    List<UserProfile> users = querySnapshot.docs
-        .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
-        .toList();
-
-    if (projectTopic.isNotEmpty) {
-      users = users.where((user) {
-        return user.academicHistory
-            .any((project) => project.topic.contains(projectTopic));
-      }).toList();
-    }
-
-    return users;
-  }
 }
