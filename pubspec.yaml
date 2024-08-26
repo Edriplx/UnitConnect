@@ -19,6 +19,7 @@ dependencies:
   provider: ^6.0.5
   firebase_storage: ^11.2.6
   carousel_slider: ^5.0.0
+  firebase_database: ^10.2.5
 
 dev_dependencies:
   flutter_test:
@@ -36,4 +37,5 @@ flutter:
     - lib/assets/ada_lovelace.png
     - lib/assets/mark_hopper.png
     - lib/assets/margaret_hamilton.png
+    - lib/assets/default_avatar.png
 

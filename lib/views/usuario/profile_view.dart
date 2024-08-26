@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:typed_data';
 import '../../models/user_model.dart';
 import '../../controllers/user_controller.dart';
+import '../../controllers/chat_controller.dart';
 import 'profile_edit_view.dart';
+import '../chat/chat_view.dart';
 
 class ProfileView extends StatefulWidget {
   final UserProfile? userProfile;
@@ -17,13 +19,16 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final ProfileController _profileService = ProfileController();
+  final ChatController _chatController = ChatController();
   UserProfile? _userProfile;
+  bool _hasActiveChat = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.userProfile != null) {
       _userProfile = widget.userProfile;
+      _checkActiveChat();
     } else if (widget.isCurrentUser) {
       _loadProfile();
     }
@@ -35,6 +40,17 @@ class _ProfileViewState extends State<ProfileView> {
       UserProfile? profile = await _profileService.getProfile(currentUser.uid);
       setState(() {
         _userProfile = profile;
+      });
+      _checkActiveChat();
+    }
+  }
+
+  Future<void> _checkActiveChat() async {
+    if (_userProfile != null && !widget.isCurrentUser) {
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      bool hasActive = await _chatController.hasActiveChat(currentUserId, _userProfile!.uid);
+      setState(() {
+        _hasActiveChat = hasActive;
       });
     }
   }
@@ -48,7 +64,7 @@ class _ProfileViewState extends State<ProfileView> {
         print('Error al cargar la imagen de perfil: $e');
       }
     }
-    return AssetImage('assets/default_avatar.png');
+    return AssetImage('lib/assets/default_avatar.png');
   }
 
   @override
@@ -114,6 +130,30 @@ class _ProfileViewState extends State<ProfileView> {
                     );
                     if (result == true) {
                       _loadProfile();
+                    }
+                  },
+                ),
+              ),
+            ],
+            if (!widget.isCurrentUser && !_hasActiveChat) ...[
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  child: Text('Iniciar chat'),
+                  onPressed: () async {
+                    String chatId = await _chatController.createChat(
+                      FirebaseAuth.instance.currentUser!.uid,
+                      _userProfile!.uid,
+                    );
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatView(chatId: chatId, otherUserProfile: _userProfile!),
+                      ),
+                    );
+                    if (result == true) {
+                      // El chat fue rechazado, actualizamos el estado
+                      _checkActiveChat();
                     }
                   },
                 ),

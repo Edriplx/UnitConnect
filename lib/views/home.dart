@@ -5,7 +5,9 @@ import 'package:unitconnect/views/usuario/profile_view.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../models/user_model.dart';
 import '../controllers/user_controller.dart';
+import '../controllers/chat_controller.dart';
 import 'package:unitconnect/views/teams/search_team.dart';
+import 'package:unitconnect/views/chat/chats_view.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final ProfileController _profileController = ProfileController();
+  final ChatController _chatController = ChatController();
   UserProfile? _currentUserProfile;
 
   @override
@@ -49,6 +52,8 @@ class _HomePageState extends State<HomePage> {
             : Center(child: CircularProgressIndicator());
       case 2:
         return SearchTeamView();
+      case 3:
+        return ChatsView(chatController: _chatController);
       default:
         return HomeContent();
     }
@@ -98,6 +103,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Search Team', // Nuevo ítem agregado
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Chats',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -238,7 +247,7 @@ class UserListView extends StatelessWidget {
                   leading: CircleAvatar(
                     backgroundImage: user.foto != null
                         ? MemoryImage(user.foto!)
-                        : AssetImage('assets/default_avatar.png')
+                        : AssetImage('lib/assets/default_avatar.png')
                             as ImageProvider,
                   ),
                   title: Text(user.name),
@@ -350,7 +359,7 @@ class SimilarInterestsList extends StatelessWidget {
                 leading: CircleAvatar(
                   backgroundImage: user.foto != null
                       ? MemoryImage(user.foto!)
-                      : AssetImage('assets/default_avatar.png')
+                      : AssetImage('lib/assets/default_avatar.png')
                           as ImageProvider,
                 ),
                 title: Text(user.name),

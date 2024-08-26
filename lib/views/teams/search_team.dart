@@ -216,7 +216,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                     leading: CircleAvatar(
                       backgroundImage: user.foto != null
                           ? MemoryImage(user.foto!)
-                          : AssetImage('assets/default_avatar.png')
+                          : AssetImage('lib/assets/default_avatar.png')
                               as ImageProvider,
                     ),
                     title: Text(user.name),
