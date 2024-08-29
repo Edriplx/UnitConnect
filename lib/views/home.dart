@@ -65,11 +65,27 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  String _getTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Perfil';
+      case 2:
+        return 'Buscar personas';
+      case 3:
+        return 'Chats';
+      default:
+        return 'App';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? 'Home' : 'Profile'),
+        title: Text(_getTitle(
+            _selectedIndex)), // Llama a una función para obtener el título correcto
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -111,7 +127,9 @@ class _HomePageState extends State<HomePage> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
+        backgroundColor: Colors.white,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

@@ -20,6 +20,7 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
   late Stream<List<Chat>> _chatsStream;
   late ProfileController userController;
   bool _mounted = true;
+  List<Chat>? _cachedChats;
 
   @override
   void initState() {
@@ -27,11 +28,22 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     _tabController = TabController(length: 2, vsync: this);
     _chatsStream = widget.chatController.getUserChats(FirebaseAuth.instance.currentUser!.uid);
     userController = ProfileController();
+
+    _tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (_mounted) {
+      setState(() {
+        // Forzar una actualización de la UI cuando cambia la pestaña
+      });
+    }
   }
 
   @override
   void dispose() {
     _mounted = false;
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
   }
@@ -63,12 +75,12 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
             return Center(child: Text('No hay chats disponibles.'));
           }
 
-          final allChats = snapshot.data!.where((chat) => !(chat.isDeleted ?? false)).toList();
+          _cachedChats = snapshot.data!.where((chat) => !(chat.isDeleted ?? false)).toList();
           return TabBarView(
             controller: _tabController,
             children: [
-              _buildChatList(allChats, isRequest: true),
-              _buildChatList(allChats, isRequest: false),
+              _buildChatList(isRequest: true),
+              _buildChatList(isRequest: false),
             ],
           );
         },
@@ -76,9 +88,16 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildChatList(List<Chat> allChats, {required bool isRequest}) {
-    final chats = allChats.where((chat) => 
-      isRequest ? !chat.isAccepted : chat.isAccepted
+  Widget _buildChatList({required bool isRequest}) {
+    if (_cachedChats == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final chats = _cachedChats!.where((chat) => 
+      isRequest 
+        ? !chat.isAccepted && chat.user2Id == currentUserId
+        : chat.isAccepted
     ).toList();
 
     if (chats.isEmpty) {
@@ -114,7 +133,7 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
           ),
           title: Text(otherUser.name),
           subtitle: Text(isRequest ? 'Solicitud de chat' : 'Chat activo'),
-          trailing: isRequest ? _buildRequestActions(context, chat) : null,
+          trailing: isRequest ? _buildRequestActions(context, chat) : _buildDeleteAction(context, chat),
           onTap: () => _openChat(context, chat.id, otherUser),
         );
       },
@@ -137,17 +156,37 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     );
   }
 
+  Widget _buildDeleteAction(BuildContext context, Chat chat) {
+    return IconButton(
+      icon: Icon(Icons.delete, color: Colors.red),
+      onPressed: () => _handleChatAction(context, chat, false),
+    );
+  }
+
   void _handleChatAction(BuildContext context, Chat chat, bool accept) async {
     if (!_mounted) return;
     try {
       if (accept) {
         await widget.chatController.acceptChat(chat.id);
+        // Actualizar el chat en la caché local
+        final index = _cachedChats?.indexWhere((c) => c.id == chat.id) ?? -1;
+        if (index != -1) {
+          setState(() {
+            _cachedChats![index] = chat.copyWith(isAccepted: true);
+          });
+        }
       } else {
         await widget.chatController.deletedChat(chat.id);
-         Navigator.of(context).pop(true);
+        // Eliminar el chat de la caché local
+        setState(() {
+          _cachedChats?.removeWhere((c) => c.id == chat.id);
+        });
       }
     } catch (e) {
       print('Error al manejar la acción del chat: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al procesar la acción. Por favor, intenta de nuevo.')),
+      );
     }
   }
 

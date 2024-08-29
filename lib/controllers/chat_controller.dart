@@ -56,6 +56,35 @@ class ChatController {
     });
   }
 
+  Stream<List<Chat>> getUserPendingChats(String userId) {
+    return _database.child('chats').onValue.map((event) {
+      final chatsMap = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+      return chatsMap.entries
+          .where((entry) =>
+              entry.value['user2Id'] == userId &&
+              entry.value['isAccepted'] == false &&
+              !(entry.value['isDeleted'] ?? false))
+          .map((entry) =>
+              Chat.fromMap(entry.key, Map<String, dynamic>.from(entry.value)))
+          .toList();
+    });
+  }
+
+  Stream<List<Chat>> getUserActiveChats(String userId) {
+    return _database.child('chats').onValue.map((event) {
+      final chatsMap = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+      return chatsMap.entries
+          .where((entry) =>
+              (entry.value['user1Id'] == userId ||
+                  entry.value['user2Id'] == userId) &&
+              entry.value['isAccepted'] == true &&
+              !(entry.value['isDeleted'] ?? false))
+          .map((entry) =>
+              Chat.fromMap(entry.key, Map<String, dynamic>.from(entry.value)))
+          .toList();
+    });
+  }
+
   Future<void> deletedChat(String chatId) async {
     try {
       await _database.child('chats/$chatId').update({'isDeleted': true});
@@ -84,7 +113,8 @@ class ChatController {
         final chatsMap = snapshot.value as Map<dynamic, dynamic>;
         return chatsMap.values.any((chat) =>
             ((chat['user1Id'] == user1Id && chat['user2Id'] == user2Id) ||
-            (chat['user1Id'] == user2Id && chat['user2Id'] == user1Id)) &&
+                (chat['user1Id'] == user2Id && chat['user2Id'] == user1Id)) &&
+            chat['isAccepted'] == true &&
             !(chat['isDeleted'] ?? false));
       }
       return false;
