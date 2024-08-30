@@ -38,4 +38,6 @@ flutter:
     - lib/assets/mark_hopper.png
     - lib/assets/margaret_hamilton.png
     - lib/assets/default_avatar.png
+    - lib/assets/fondologin.jpg
+    - lib/assets/logo.png
 
