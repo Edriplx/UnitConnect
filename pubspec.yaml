@@ -40,4 +40,10 @@ flutter:
     - lib/assets/default_avatar.png
     - lib/assets/fondologin.jpg
     - lib/assets/logo.png
+    - lib/assets/person.png
+    - lib/assets/artes.png
+    - lib/assets/ciencias.jpg
+    - lib/assets/humanidades.png
+    - lib/assets/ingenieria.png
+    - lib/assets/negocios.png
 

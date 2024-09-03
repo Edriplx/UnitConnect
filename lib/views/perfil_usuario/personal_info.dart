@@ -1,4 +1,3 @@
-// lib/views/complete_profile_view.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/user_model.dart';
@@ -26,7 +25,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade300, Colors.purple.shade300],
+              colors: [Color(0xFFCDE1EE), Color(0xFF448AFF)],
             ),
           ),
           child: SafeArea(
@@ -49,9 +48,16 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                     ),
                     SizedBox(height: 40),
                     CircleAvatar(
-                      radius: 60,
+                      radius: 100,
                       backgroundColor: Colors.white,
-                      child: Icon(Icons.person, size: 80, color: Colors.blue.shade300),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'lib/assets/person.png',
+                          fit: BoxFit.cover,
+                          width: 170,
+                          height: 170,
+                        ),
+                      ),
                     ),
                     SizedBox(height: 40),
                     TextFormField(
@@ -86,7 +92,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                         ),
                         prefixIcon: Icon(Icons.edit),
                       ),
-                      maxLines: 3,
+                      maxLines: 5, // Aumenta la altura del área de texto
                     ),
                     SizedBox(height: 40),
                     ElevatedButton(
@@ -98,7 +104,8 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.blue.shade300,
+                        foregroundColor: Color(0xFF005088),
+                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -116,39 +123,38 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
   }
 
   void _saveProfile() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        UserProfile newProfile = UserProfile(
-          uid: currentUser.uid,
-          name: _nameController.text,
-          email: currentUser.email ?? '',
-          mainStudyArea: '',
-          skills: [],
-          academicHistory: [],
-          bio: _bioController.text,
-        );
+    if (_formKey.currentState!.validate()) {
+      try {
+        User? currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          UserProfile newProfile = UserProfile(
+            uid: currentUser.uid,
+            name: _nameController.text,
+            email: currentUser.email ?? '',
+            mainStudyArea: '',
+            skills: [],
+            academicHistory: [],
+            bio: _bioController.text,
+          );
 
-        await _profileController.createProfile(newProfile);
+          await _profileController.createProfile(newProfile);
 
-        // Navigate to MainStudyAreaPage with name and bio
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainStudyAreaPage(
-              userName: _nameController.text,
-              userBio: _bioController.text,
+          // Navegar a la siguiente pantalla con el nombre y la biografía
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainStudyAreaPage(
+                userName: _nameController.text,
+                userBio: _bioController.text,
+              ),
             ),
-          ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar el perfil: $e')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar el perfil: $e')),
-      );
     }
   }
-}
-
 }

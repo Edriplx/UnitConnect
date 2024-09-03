@@ -8,7 +8,6 @@ import '../../views/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:typed_data'; // Para manejar datos binarios
 
-
 class ProfilePicturePage extends StatefulWidget {
   final String selectedArea;
   final List<String> skills;
@@ -95,61 +94,86 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Foto de Perfil'),
-        backgroundColor: Colors.blue, // Color consistente en la barra de app
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Agrega una foto de perfil',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              _image == null
-                  ? Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.camera_alt, size: 50, color: Colors.grey[400]),
-                    )
-                  : CircleAvatar(
-                      radius: 100,
-                      backgroundImage: FileImage(_image!),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFCDE1EE), Color(0xFF448AFF)],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: getImage,
-                child: Text('Seleccionar Imagen'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Color consistente en el botón
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-              ),
-              Spacer(),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _finishProfileSetup,
-                child: _isLoading
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        'Finalizar',
-                        style: TextStyle(fontSize: 18),
+                    Text(
+                      'Agrega una foto de perfil',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Color consistente en el botón
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  minimumSize: Size(double.infinity, 50),
+                    ),
+                    SizedBox(
+                        width:
+                            48), // Espacio para que el icono no se sobreponga
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+                _image == null
+                    ? Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.camera_alt,
+                            size: 50, color: Colors.grey[400]),
+                      )
+                    : CircleAvatar(
+                        radius: 100,
+                        backgroundImage: FileImage(_image!),
+                      ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: getImage,
+                  child: Text('Seleccionar Imagen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    // Color consistente en el botón
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    textStyle: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+                Spacer(),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _finishProfileSetup,
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          'Finalizar',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Color(0xFF005088), // Consistent button color
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

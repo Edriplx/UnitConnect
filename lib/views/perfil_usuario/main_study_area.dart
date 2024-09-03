@@ -32,7 +32,7 @@ class _MainStudyAreaPageState extends State<MainStudyAreaPage> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade300, Colors.purple.shade300],
+              colors: [Color(0xFFCDE1EE), Color(0xFF448AFF)],
             ),
           ),
           child: SafeArea(
@@ -52,28 +52,42 @@ class _MainStudyAreaPageState extends State<MainStudyAreaPage> {
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 40),
-                  DropdownButtonFormField<String>(
-                    value: selectedArea,
-                    items: studyAreas.map((String area) {
-                      return DropdownMenuItem<String>(
-                        value: area,
-                        child: Text(area),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedArea = newValue;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
+                  // Mejora del diseño del DropdownButtonFormField
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: Offset(0, 3), // Sombra del botón
+                        ),
+                      ],
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      value: selectedArea,
+                      items: studyAreas.map((String area) {
+                        return DropdownMenuItem<String>(
+                          value: area,
+                          child: Text(area),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedArea = newValue;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.transparent, // Fondo transparente
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                        labelText: 'Selecciona tu área',
+                        labelStyle: TextStyle(color: Colors.black54),
                       ),
-                      labelText: 'Selecciona tu área',
-                      labelStyle: TextStyle(color: Colors.black54),
                     ),
                   ),
                   Spacer(),
@@ -86,7 +100,7 @@ class _MainStudyAreaPageState extends State<MainStudyAreaPage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.blue.shade300,
+                      foregroundColor: Color(0xFF005088),
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),

@@ -15,7 +15,8 @@ class ChatsView extends StatefulWidget {
   _ChatsViewState createState() => _ChatsViewState();
 }
 
-class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMixin {
+class _ChatsViewState extends State<ChatsView>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Stream<List<Chat>> _chatsStream;
   late ProfileController userController;
@@ -26,7 +27,8 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _chatsStream = widget.chatController.getUserChats(FirebaseAuth.instance.currentUser!.uid);
+    _chatsStream = widget.chatController
+        .getUserChats(FirebaseAuth.instance.currentUser!.uid);
     userController = ProfileController();
 
     _tabController.addListener(_handleTabChange);
@@ -52,38 +54,71 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chats'),
+        title: Text(
+          'Mensajes',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 30, // Tamaño del texto aumentado
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white, // Color de la línea de selección
+          labelColor: Colors.white, // Color del texto seleccionado
+          unselectedLabelColor:
+              Colors.grey[300], // Color del texto no seleccionado
           tabs: [
-            Tab(text: 'Solicitudes'),
-            Tab(text: 'Chats Activos'),
+            Tab(
+              text: 'Solicitudes',
+              icon: Icon(Icons.request_page), // Icono opcional
+            ),
+            Tab(
+              text: 'Chats Activos',
+              icon: Icon(Icons.chat_bubble_outline), // Icono opcional
+            ),
           ],
         ),
+        backgroundColor:
+            Color.fromARGB(255, 65, 142, 181), // Color de fondo del AppBar
       ),
-      body: StreamBuilder<List<Chat>>(
-        stream: _chatsStream,
-        builder: (context, snapshot) {
-          if (!_mounted) return Container();
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No hay chats disponibles.'));
-          }
-
-          _cachedChats = snapshot.data!.where((chat) => !(chat.isDeleted ?? false)).toList();
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildChatList(isRequest: true),
-              _buildChatList(isRequest: false),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 170, 210, 233),
+              Color(0xFFD5D2D1),
+              Color.fromARGB(255, 170, 210, 233),
             ],
-          );
-        },
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: StreamBuilder<List<Chat>>(
+          stream: _chatsStream,
+          builder: (context, snapshot) {
+            if (!_mounted) return Container();
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No hay chats disponibles.'));
+            }
+
+            _cachedChats = snapshot.data!
+                .where((chat) => !(chat.isDeleted ?? false))
+                .toList();
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildChatList(isRequest: true),
+                _buildChatList(isRequest: false),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -94,25 +129,30 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     }
 
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final chats = _cachedChats!.where((chat) => 
-      isRequest 
-        ? !chat.isAccepted && chat.user2Id == currentUserId
-        : chat.isAccepted
-    ).toList();
+    final chats = _cachedChats!
+        .where((chat) => isRequest
+            ? !chat.isAccepted && chat.user2Id == currentUserId
+            : chat.isAccepted)
+        .toList();
 
     if (chats.isEmpty) {
-      return Center(child: Text(isRequest ? 'No hay solicitudes de chat.' : 'No hay chats activos.'));
+      return Center(
+          child: Text(isRequest
+              ? 'No hay solicitudes de chat.'
+              : 'No hay chats activos.'));
     }
 
     return ListView.builder(
       itemCount: chats.length,
-      itemBuilder: (context, index) => _buildChatTile(context, chats[index], isRequest),
+      itemBuilder: (context, index) =>
+          _buildChatTile(context, chats[index], isRequest),
     );
   }
 
   Widget _buildChatTile(BuildContext context, Chat chat, bool isRequest) {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    final otherUserId = chat.user1Id == currentUserId ? chat.user2Id : chat.user1Id;
+    final otherUserId =
+        chat.user1Id == currentUserId ? chat.user2Id : chat.user1Id;
 
     return FutureBuilder<UserProfile?>(
       future: userController.getProfile(otherUserId),
@@ -131,9 +171,20 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
                 ? MemoryImage(otherUser.foto!)
                 : AssetImage('lib/assets/default_avatar.png') as ImageProvider,
           ),
-          title: Text(otherUser.name),
-          subtitle: Text(isRequest ? 'Solicitud de chat' : 'Chat activo'),
-          trailing: isRequest ? _buildRequestActions(context, chat) : _buildDeleteAction(context, chat),
+          title: Text(
+            otherUser.name,
+            style: TextStyle(
+              fontSize: 18, // Aumentar el tamaño del texto
+              fontWeight: FontWeight.bold, // Negrita para destacar el nombre
+            ),
+          ),
+          subtitle: Text(
+            isRequest ? 'Solicitud de chat' : 'Chat activo',
+            style: TextStyle(fontSize: 16),
+          ),
+          trailing: isRequest
+              ? _buildRequestActions(context, chat)
+              : _buildDeleteAction(context, chat),
           onTap: () => _openChat(context, chat.id, otherUser),
         );
       },
@@ -185,7 +236,9 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     } catch (e) {
       print('Error al manejar la acción del chat: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al procesar la acción. Por favor, intenta de nuevo.')),
+        SnackBar(
+            content: Text(
+                'Error al procesar la acción. Por favor, intenta de nuevo.')),
       );
     }
   }
@@ -195,7 +248,8 @@ class _ChatsViewState extends State<ChatsView> with SingleTickerProviderStateMix
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatView(chatId: chatId, otherUserProfile: otherUser),
+        builder: (context) =>
+            ChatView(chatId: chatId, otherUserProfile: otherUser),
       ),
     );
   }
