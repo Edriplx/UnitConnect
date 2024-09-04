@@ -67,126 +67,75 @@ class _EditProfileViewState extends State<EditProfileView> {
           ),
           SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                    height: 180), // Ajuste para posicionar el avatar más abajo
-                Center(
-                  child: GestureDetector(
-                    onTap: _selectImage,
-                    child: CircleAvatar(
-                      radius: 70,
-                      backgroundImage:
-                          _newFoto != null ? MemoryImage(_newFoto!) : null,
-                      child: _newFoto == null
-                          ? Icon(Icons.camera_alt,
-                              size: 50, color: Colors.grey[700])
-                          : null,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                      height:
+                          180), // Ajuste para posicionar el avatar más abajo
+                  Center(
+                    child: GestureDetector(
+                      onTap: _selectImage,
+                      child: CircleAvatar(
+                        radius: 70,
+                        backgroundImage:
+                            _newFoto != null ? MemoryImage(_newFoto!) : null,
+                        child: _newFoto == null
+                            ? Icon(Icons.camera_alt,
+                                size: 50, color: Colors.grey[700])
+                            : null,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 24),
-                _buildTextField(
-                  controller: _nameController,
-                  label: 'Nombre',
-                  validator: (value) =>
-                      value!.isEmpty ? 'Por favor ingrese su nombre' : null,
-                ),
-                _buildTextField(
-                  controller: _bioController,
-                  label: 'Biografía',
-                  maxLines: 4,
-                ),
-                _buildTextField(
-                  controller: _mainStudyAreaController,
-                  label: 'Área de estudio',
-                  validator: (value) => value!.isEmpty
-                      ? 'Por favor ingrese su área de estudio'
-                      : null,
-                ),
-                SizedBox(height: 24),
-                Text(
-                  'Habilidades',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 18),
-                ),
-                SizedBox(height: 8),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: _skills
-                      .map((skill) => Chip(
-                            label: Text(skill),
-                            backgroundColor: Colors.white,
-                            labelStyle: TextStyle(color: Colors.black),
-                            onDeleted: () {
-                              setState(() {
-                                _skills.remove(skill);
-                              });
-                            },
-                          ))
-                      .toList(),
-                ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  child: Text('Agregar habilidad'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF448AFF), // backgroundColor
-                    foregroundColor: Colors.white, // foregroundColor
-                    minimumSize: Size(double.infinity,
-                        50), // Tamaño más grande y ancho completo
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    elevation: 5,
+                  SizedBox(height: 24),
+                  _buildTextField(
+                    controller: _nameController,
+                    label: 'Nombre',
+                    validator: (value) =>
+                        value!.isEmpty ? 'Por favor ingrese su nombre' : null,
                   ),
-                  onPressed: _addSkill,
-                ),
-                SizedBox(height: 24),
-                Text(
-                  'Proyectos académicos',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 18),
-                ),
-                SizedBox(height: 8),
-                ..._academicProjects
-                    .map((project) => ListTile(
-                          title: Text(project.name),
-                          subtitle: Text('${project.area} - ${project.topic}'),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                _academicProjects.remove(project);
-                              });
-                            },
-                          ),
-                        ))
-                    .toList(),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  child: Text('Agregar proyecto académico'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF448AFF), // backgroundColor
-                    foregroundColor: Colors.white, // foregroundColor
-                    minimumSize: Size(double.infinity,
-                        50), // Tamaño más grande y ancho completo
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    elevation: 5,
+                  _buildTextField(
+                    controller: _bioController,
+                    label: 'Biografía',
+                    maxLines: 4,
                   ),
-                  onPressed: _addAcademicProject,
-                ),
-                SizedBox(height: 24),
-                Center(
-                  child: ElevatedButton(
-                    child: Text('Guardar cambios'),
+                  _buildTextField(
+                    controller: _mainStudyAreaController,
+                    label: 'Área de estudio',
+                    validator: (value) => value!.isEmpty
+                        ? 'Por favor ingrese su área de estudio'
+                        : null,
+                  ),
+                  SizedBox(height: 24),
+                  Text(
+                    'Habilidades',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 4.0,
+                    children: _skills
+                        .map((skill) => Chip(
+                              label: Text(skill),
+                              backgroundColor: Colors.white,
+                              labelStyle: TextStyle(color: Colors.black),
+                              onDeleted: () {
+                                setState(() {
+                                  _skills.remove(skill);
+                                });
+                              },
+                            ))
+                        .toList(),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    child: Text('Agregar habilidad'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF448AFF), // backgroundColor
                       foregroundColor: Colors.white, // foregroundColor
@@ -197,10 +146,66 @@ class _EditProfileViewState extends State<EditProfileView> {
                       ),
                       elevation: 5,
                     ),
-                    onPressed: _saveChanges,
+                    onPressed: _addSkill,
                   ),
-                ),
-              ],
+                  SizedBox(height: 24),
+                  Text(
+                    'Proyectos académicos',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  ..._academicProjects
+                      .map((project) => ListTile(
+                            title: Text(project.name),
+                            subtitle:
+                                Text('${project.area} - ${project.topic}'),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _academicProjects.remove(project);
+                                });
+                              },
+                            ),
+                          ))
+                      .toList(),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    child: Text('Agregar proyecto académico'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF448AFF), // backgroundColor
+                      foregroundColor: Colors.white, // foregroundColor
+                      minimumSize: Size(double.infinity,
+                          50), // Tamaño más grande y ancho completo
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      elevation: 5,
+                    ),
+                    onPressed: _addAcademicProject,
+                  ),
+                  SizedBox(height: 24),
+                  Center(
+                    child: ElevatedButton(
+                      child: Text('Guardar cambios'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF448AFF), // backgroundColor
+                        foregroundColor: Colors.white, // foregroundColor
+                        minimumSize: Size(double.infinity,
+                            50), // Tamaño más grande y ancho completo
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: _saveChanges,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -252,8 +257,10 @@ class _EditProfileViewState extends State<EditProfileView> {
     if (image != null) {
       File imageFile = File(image.path);
       Uint8List imageData = await imageFile.readAsBytes();
+      String base64Image = base64Encode(imageData);
       setState(() {
-        _newFoto = imageData; // Actualizar la imagen como datos binarios
+        _newFoto = base64Decode(
+            base64Image); // Actualizar la imagen como datos binarios
       });
     }
   }

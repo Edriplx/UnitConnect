@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'dart:convert'; // Para codificación en Base64
-import '../../models/user_model.dart'; // Asegúrate de que la ruta sea correcta
+import 'dart:convert';
+import '../../models/user_model.dart';
 import '../../controllers/user_controller.dart';
 import '../../views/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:typed_data'; // Para manejar datos binarios
+import 'dart:typed_data';
 
 class ProfilePicturePage extends StatefulWidget {
   final String selectedArea;
@@ -57,7 +57,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
       Uint8List? imageBytes;
       if (_image != null) {
         final base64String = await _encodeImageToBase64(_image!);
-        imageBytes = base64Decode(base64String); // Decode Base64 to Uint8List
+        imageBytes = base64Decode(base64String);
       }
 
       final User? user = FirebaseAuth.instance.currentUser;
@@ -70,7 +70,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
         mainStudyArea: widget.selectedArea,
         skills: widget.skills,
         academicHistory: widget.academicProjects,
-        foto: imageBytes, // Almacenar los datos binarios de la imagen
+        foto: imageBytes,
         bio: widget.userBio,
       );
 
@@ -108,55 +108,64 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 40),
+                SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
                       icon: Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
-                    Text(
-                      'Agrega una foto de perfil',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Expanded(
+                      child: Text(
+                        'Agrega una foto de perfil',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    SizedBox(
-                        width:
-                            48), // Espacio para que el icono no se sobreponga
+                    SizedBox(width: 48),
                   ],
                 ),
                 SizedBox(height: 20),
-                _image == null
-                    ? Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          shape: BoxShape.circle,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _image == null
+                            ? Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.camera_alt,
+                                    size: 50, color: Colors.grey[400]),
+                              )
+                            : CircleAvatar(
+                                radius: 100,
+                                backgroundImage: FileImage(_image!),
+                              ),
+                        SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: getImage,
+                          child: Text('Seleccionar Imagen'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 15),
+                            textStyle:
+                                TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                         ),
-                        child: Icon(Icons.camera_alt,
-                            size: 50, color: Colors.grey[400]),
-                      )
-                    : CircleAvatar(
-                        radius: 100,
-                        backgroundImage: FileImage(_image!),
-                      ),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: getImage,
-                  child: Text('Seleccionar Imagen'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    // Color consistente en el botón
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    textStyle: TextStyle(fontSize: 18, color: Colors.white),
+                      ],
+                    ),
                   ),
                 ),
-                Spacer(),
+                SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _finishProfileSetup,
                   child: _isLoading
@@ -166,8 +175,7 @@ class _ProfilePicturePageState extends State<ProfilePicturePage> {
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Color(0xFF005088), // Consistent button color
+                    backgroundColor: Color(0xFF005088),
                     padding: EdgeInsets.symmetric(vertical: 16),
                     minimumSize: Size(double.infinity, 50),
                   ),

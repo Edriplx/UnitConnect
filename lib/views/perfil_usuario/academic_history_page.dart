@@ -46,7 +46,6 @@ class _AcademicHistoryPageState extends State<AcademicHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -72,7 +71,7 @@ class _AcademicHistoryPageState extends State<AcademicHistoryPage> {
                         child: Text(
                           'Agrega tus proyectos académicos',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -84,131 +83,65 @@ class _AcademicHistoryPageState extends State<AcademicHistoryPage> {
                   ],
                 ),
                 SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _projectNameController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: InputBorder.none,
-                      labelText: 'Nombre del proyecto',
-                      labelStyle: TextStyle(color: Colors.black54),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _projectAreaController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: InputBorder.none,
-                      labelText: 'Área del proyecto',
-                      labelStyle: TextStyle(color: Colors.black54),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _projectTopicController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.transparent,
-                      border: InputBorder.none,
-                      labelText: 'Temática del proyecto',
-                      labelStyle: TextStyle(color: Colors.black54),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  child: Text(
-                    'Agregar Proyecto',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: _addProject,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF448AFF),
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    textStyle: TextStyle(fontSize: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: projects.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: 5),
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          title: Text(projects[index].name),
-                          subtitle: Text(
-                              '${projects[index].area} - ${projects[index].topic}'),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                projects.removeAt(index);
-                              });
-                            },
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildTextField(
+                            _projectNameController, 'Nombre del proyecto'),
+                        SizedBox(height: 10),
+                        _buildTextField(
+                            _projectAreaController, 'Área del proyecto'),
+                        SizedBox(height: 10),
+                        _buildTextField(
+                            _projectTopicController, 'Temática del proyecto'),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          child: Text(
+                            'Agregar Proyecto',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: _addProject,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF448AFF),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 15),
+                            textStyle: TextStyle(fontSize: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
                           ),
                         ),
-                      );
-                    },
+                        SizedBox(height: 20),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: projects.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              margin: EdgeInsets.symmetric(vertical: 5),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: ListTile(
+                                title: Text(projects[index].name),
+                                subtitle: Text(
+                                    '${projects[index].area} - ${projects[index].topic}'),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    setState(() {
+                                      projects.removeAt(index);
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -245,6 +178,35 @@ class _AcademicHistoryPageState extends State<AcademicHistoryPage> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.transparent,
+          border: InputBorder.none,
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.black54),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         ),
       ),
     );

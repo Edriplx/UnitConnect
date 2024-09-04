@@ -56,7 +56,6 @@ class ProfileController {
       return [];
     }
 
-    // Obtener todos los usuarios con la misma área de estudio principal
     QuerySnapshot querySnapshot = await _firestore
         .collection('profiles')
         .where('mainStudyArea', isEqualTo: currentUser.mainStudyArea)
@@ -67,17 +66,13 @@ class ProfileController {
         .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
         .toList();
 
-    // Filtrar y ordenar usuarios basados en habilidades compartidas
     List<UserProfile> similarUsers = potentialMatches.where((user) {
-      // Contar habilidades compartidas
       int sharedSkills = user.skills
           .where((skill) => currentUser.skills.contains(skill))
           .length;
-      // Considerar como match si comparten al menos una habilidad
       return sharedSkills > 0;
     }).toList();
 
-    // Ordenar por número de habilidades compartidas (de mayor a menor)
     similarUsers.sort((a, b) {
       int aSharedSkills =
           a.skills.where((skill) => currentUser.skills.contains(skill)).length;
@@ -86,7 +81,6 @@ class ProfileController {
       return bSharedSkills.compareTo(aSharedSkills);
     });
 
-    // Limitar a un máximo de 20 usuarios para evitar cargar demasiados datos
     return similarUsers.take(20).toList();
   }
 
@@ -98,11 +92,10 @@ class ProfileController {
     return [];
   }
 
-  // Implementación de searchUsers
-  Future<List<UserProfile>> searchUsers({
+  Future<UserProfile> searchUser({
     required String studyArea,
     required String skill,
-    required String projectTopic,
+    required String currentUserId,
   }) async {
     Query query = _firestore.collection('profiles');
 
@@ -117,15 +110,68 @@ class ProfileController {
     QuerySnapshot querySnapshot = await query.get();
     List<UserProfile> users = querySnapshot.docs
         .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
+        .where((user) => user.uid != currentUserId)
         .toList();
 
-    if (projectTopic.isNotEmpty) {
-      users = users.where((user) {
-        return user.academicHistory
-            .any((project) => project.topic.contains(projectTopic));
-      }).toList();
+    // Si se encuentra al menos un usuario que coincide con el área de estudio, devolver el mejor match
+    if (users.isNotEmpty) {
+      users.sort((a, b) {
+        int aMatchScore = calculateMatchScore(a, skill);
+        int bMatchScore = calculateMatchScore(b, skill);
+        return bMatchScore.compareTo(aMatchScore);
+      });
+      return users.first;
     }
 
-    return users;
+    // Si no se encuentra ningún usuario que coincida con el área de estudio, devolver el usuario más cercano
+    return _findClosestMatchByArea(studyArea, skill, currentUserId);
+  }
+
+  Future<UserProfile> _findClosestMatchByArea(
+    String studyArea,
+    String skill,
+    String currentUserId,
+  ) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('profiles')
+        .where('mainStudyArea', isEqualTo: studyArea)
+        .where('uid', isNotEqualTo: currentUserId)
+        .get();
+
+    List<UserProfile> users = querySnapshot.docs
+        .map((doc) => UserProfile.fromMap(doc.data() as Map<String, dynamic>))
+        .toList();
+
+    if (users.isNotEmpty) {
+      // Ordenar los usuarios por coincidencia de habilidad y devolver el mejor match
+      users.sort((a, b) {
+        int aMatchScore = calculateMatchScore(a, skill);
+        int bMatchScore = calculateMatchScore(b, skill);
+        return bMatchScore.compareTo(aMatchScore);
+      });
+      return users.first;
+    }
+
+    // Si no se encuentra ningún usuario en el área de estudio, devolver un perfil de usuario vacío
+    return UserProfile(
+      uid: '',
+      name: '',
+      email: '',
+      mainStudyArea: '',
+      skills: [],
+      academicHistory: [],
+      foto: null,
+      bio: null,
+    );
+  }
+
+  int calculateMatchScore(UserProfile user, String skill) {
+    int score = 0;
+
+    if (user.skills.contains(skill)) {
+      score += 10; // Puntuación por habilidad
+    }
+
+    return score;
   }
 }

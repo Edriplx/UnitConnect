@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../controllers/user_controller.dart';
 import '../../models/user_model.dart';
+import '../usuario/profile_view.dart';
 
 class SearchTeamView extends StatefulWidget {
   @override
@@ -11,7 +14,9 @@ class _SearchTeamViewState extends State<SearchTeamView> {
   String selectedStudyArea = '';
   String selectedSkill = '';
   String selectedProjectTopic = '';
-  List<UserProfile> _searchResults = [];
+  UserProfile? _searchResult;
+  Completer<void>?
+      _loadingCompleter; // Completer para manejar el cierre del diálogo
 
   @override
   Widget build(BuildContext context) {
@@ -19,16 +24,15 @@ class _SearchTeamViewState extends State<SearchTeamView> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          'Buscar Compañeros',
+          'Buscar Compañero',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
-            color: const Color.fromARGB(
-                255, 8, 8, 8), // Asegúrate de que el texto sea visible
+            color: const Color.fromARGB(255, 8, 8, 8),
           ),
         ),
-        backgroundColor: Colors.transparent, // Sin color de fondo
-        elevation: 0, // Sin sombra
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -50,7 +54,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 80), // Espacio superior para el título
+                  SizedBox(height: 80),
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Text(
@@ -79,44 +83,19 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                     },
                   ),
                   SizedBox(height: 16),
-                  _buildDropdownField(
+                  _buildTextField(
                     label: 'Habilidades',
-                    items: <String>[
-                      'Programación',
-                      'Diseño Gráfico',
-                      'Redacción',
-                      'Investigación'
-                    ],
-                    selectedValue: selectedSkill,
                     onChanged: (value) {
                       setState(() {
                         selectedSkill = value!;
                       });
                     },
                   ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Tema del Proyecto Académico',
-                    onChanged: (value) {
-                      setState(() {
-                        selectedProjectTopic = value;
-                      });
-                    },
-                  ),
                   SizedBox(height: 32),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () async {
-                        List<UserProfile> searchResults =
-                            await ProfileController().searchUsers(
-                          studyArea: selectedStudyArea,
-                          skill: selectedSkill,
-                          projectTopic: selectedProjectTopic,
-                        );
-
-                        setState(() {
-                          _searchResults = searchResults;
-                        });
+                      onPressed: () {
+                        searchForBestMatch(context);
                       },
                       style: ElevatedButton.styleFrom(
                         padding:
@@ -134,7 +113,7 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                     ),
                   ),
                   SizedBox(height: 32),
-                  _buildResultsSection(), // Sección para los resultados de la búsqueda
+                  _buildResultSection(), // Sección para el resultado de la búsqueda
                 ],
               ),
             ),
@@ -221,12 +200,12 @@ class _SearchTeamViewState extends State<SearchTeamView> {
     );
   }
 
-  Widget _buildResultsSection() {
+  Widget _buildResultSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Resultados:',
+          'Resultado:',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -234,22 +213,22 @@ class _SearchTeamViewState extends State<SearchTeamView> {
           ),
         ),
         SizedBox(height: 16),
-        _searchResults.isNotEmpty
-            ? ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _searchResults.length,
-                itemBuilder: (context, index) {
-                  UserProfile user = _searchResults[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: user.foto != null
-                          ? MemoryImage(user.foto!)
-                          : AssetImage('lib/assets/default_avatar.png')
-                              as ImageProvider,
+        _searchResult != null
+            ? ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: _searchResult!.foto != null
+                      ? MemoryImage(_searchResult!.foto!)
+                      : AssetImage('lib/assets/default_avatar.png')
+                          as ImageProvider,
+                ),
+                title: Text(_searchResult!.name),
+                subtitle: Text(_searchResult!.mainStudyArea),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          SearchResultView(userProfile: _searchResult!),
                     ),
-                    title: Text(user.name),
-                    subtitle: Text(user.mainStudyArea),
                   );
                 },
               )
@@ -265,6 +244,156 @@ class _SearchTeamViewState extends State<SearchTeamView> {
                 ),
               ),
       ],
+    );
+  }
+
+  void showLoadingDialog(BuildContext context) {
+    _loadingCompleter = Completer<void>();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            alignment: Alignment.center,
+            height: 150.0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 20.0),
+                Text("Buscando similitudes...",
+                    style: TextStyle(color: Colors.white)),
+                SizedBox(height: 10.0),
+                Text("Buscando personas para ti...",
+                    style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    // Simula un retraso de 3 segundos antes de cerrar el modal
+    Future.delayed(Duration(seconds: 3), () {
+      if (_loadingCompleter != null && !_loadingCompleter!.isCompleted) {
+        Navigator.of(context).pop(); // Cierra el modal de carga
+        _loadingCompleter!.complete();
+      }
+    });
+  }
+
+  void searchForBestMatch(BuildContext context) async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    showLoadingDialog(context);
+
+    // Realiza la búsqueda
+    UserProfile? bestMatchProfile = await ProfileController().searchUser(
+      studyArea: selectedStudyArea,
+      skill: selectedSkill,
+      currentUserId: currentUser!.uid,
+    );
+
+    // Espera a que se cierre el modal de carga antes de continuar
+    await _loadingCompleter?.future;
+
+    setState(() {
+      _searchResult = bestMatchProfile;
+    });
+
+    // Navega a la vista de resultados
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SearchResultView(userProfile: _searchResult!),
+      ),
+    );
+  }
+}
+
+class SearchResultView extends StatelessWidget {
+  final UserProfile userProfile;
+
+  const SearchResultView({required this.userProfile});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('El mejor compañero para ti'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: userProfile.foto != null
+                  ? MemoryImage(userProfile.foto!)
+                  : AssetImage('lib/assets/default_avatar.png')
+                      as ImageProvider,
+            ),
+            SizedBox(height: 20),
+            Text(
+              userProfile.name,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Text(
+              userProfile.mainStudyArea,
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Habilidades: ${userProfile.skills.join(', ')}',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ProfileView(userProfile: userProfile),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                backgroundColor: Color(0xFF005088),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text(
+                'Ver perfil',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                backgroundColor: Colors.grey[400],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text(
+                'Atrás',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
